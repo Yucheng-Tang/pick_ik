@@ -85,6 +85,8 @@ bool PickIKPlugin::searchPositionIK(std::vector<geometry_msgs::msg::Pose> const&
     // Read current ROS parameters
     auto params = parameter_listener_->get_params();
 
+    RCLCPP_WARN(LOGGER, "Using '%s' BIO IK!!!", robot_model_->getName().c_str());
+
     auto const goal_frames = [&]() {
         auto robot_state = moveit::core::RobotState(robot_model_);
         robot_state.setToDefaultValues();
@@ -289,6 +291,17 @@ bool PickIKPlugin::searchPositionIK(std::vector<geometry_msgs::msg::Pose> const&
             remaining_timeout = timeout - total_optim_time.count();
         }
     }
+
+    for (size_t i = 0; i < solution.size(); ++i)
+    {
+        RCLCPP_WARN(rclcpp::get_logger("my_logger"), "Solution[%zu]: %f", i, solution[i]);
+    }
+
+    RCLCPP_WARN(rclcpp::get_logger("my_logger"), "Time: %f", total_optim_time.count());
+    RCLCPP_WARN(rclcpp::get_logger("my_logger"), "Solution: %s", fmt::format("{}", found_valid_solution).c_str());
+    RCLCPP_WARN(LOGGER, "Finished '%s' BIO IK!!!", robot_model_->getName().c_str());
+
+    std::cout<< found_valid_solution <<std::endl;
 
     return found_valid_solution;
 }
