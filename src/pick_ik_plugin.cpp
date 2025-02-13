@@ -48,8 +48,11 @@ bool PickIKPlugin::initialize(rclcpp::Node::SharedPtr const& node,
         return false;
     }
 
+    RCLCPP_WARN(LOGGER, "Joint Model Group Name '%s'!!!", jmg_->getName().c_str());
+
     // Joint names come from jmg
     for (auto* joint_model : jmg_->getJointModels()) {
+        RCLCPP_WARN(LOGGER, "Joint Model Name '%s'!!!", joint_model->getName().c_str());
         if (joint_model->getName() != base_frame_ &&
             joint_model->getType() != moveit::core::JointModel::UNKNOWN &&
             joint_model->getType() != moveit::core::JointModel::FIXED) {
@@ -60,6 +63,11 @@ bool PickIKPlugin::initialize(rclcpp::Node::SharedPtr const& node,
     // link_names are the same as tip frames
     // TODO: why do we need to set this
     link_names_ = tip_frames_;
+    for (size_t i = 0; i < tip_frames_.size(); ++i)
+    {
+        RCLCPP_WARN(LOGGER, "tip_frames_ '%s'!!!", tip_frames_[i].c_str());
+    }
+
 
     // Create our internal Robot object from the robot model
     tip_link_indices_ = get_link_indices(robot_model_, tip_frames_)
@@ -86,6 +94,24 @@ bool PickIKPlugin::searchPositionIK(std::vector<geometry_msgs::msg::Pose> const&
     auto params = parameter_listener_->get_params();
 
     RCLCPP_WARN(LOGGER, "Using '%s' BIO IK!!!", robot_model_->getName().c_str());
+
+    for (size_t i = 0; i < ik_seed_state.size(); ++i)
+    {
+        RCLCPP_WARN(rclcpp::get_logger("my_logger"), "ik_seed_state[%zu]: %f", i, ik_seed_state[i]);
+    }
+
+    RCLCPP_WARN(LOGGER, "Using '%ld' BIO IK!!!", ik_poses.size());
+    for (size_t i = 0; i < ik_poses.size(); ++i)
+    {
+        const auto& pose = ik_poses[i];
+
+        RCLCPP_WARN(
+            rclcpp::get_logger("ik_logger"),
+            "Pose %lu: Position (x: %f, y: %f, z: %f) | Orientation (x: %f, y: %f, z: %f, w: %f)",
+            i,
+            pose.position.x, pose.position.y, pose.position.z,
+            pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
+    }
 
     auto const goal_frames = [&]() {
         auto robot_state = moveit::core::RobotState(robot_model_);
